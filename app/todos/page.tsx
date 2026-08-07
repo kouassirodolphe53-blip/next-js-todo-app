@@ -1,7 +1,8 @@
 import { clsx } from "clsx";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import type { Author, Task } from "@prisma/client";
+import { auth, signIn, signOut } from "@/auth";
+import type { Task, User } from "@prisma/client";
 
 const PAGE_SIZE = 20;
 
@@ -20,29 +21,38 @@ type TaskCreateData = {
   description?: string;
   dueDate?: Date;
   isDone: boolean;
-  author?: { connect: { id: number } };
+  user?: { connect: { id: string } };
 };
 
 async function createTask(formData: FormData) {
   "use server";
 
+  const session = await auth();
   const title = formData.get("title")?.toString()?.trim();
   const description = formData.get("description")?.toString().trim() || undefined;
   const dueDateValue = formData.get("dueDate")?.toString();
-  const authorIdValue = formData.get("authorId")?.toString();
 
   if (!title) return;
 
   const data: TaskCreateData = { title, isDone: false };
   if (description) data.description = description;
   if (dueDateValue) data.dueDate = new Date(dueDateValue);
-  if (authorIdValue) {
-    const authorId = Number(authorIdValue);
-    if (!Number.isNaN(authorId)) data.author = { connect: { id: authorId } };
+  if (session?.user?.id) {
+    data.user = { connect: { id: session.user.id } };
   }
 
   await prisma.task.create({ data });
   revalidatePath("/todos");
+}
+
+async function signInAction() {
+  "use server";
+  await signIn("github");
+}
+
+async function signOutAction() {
+  "use server";
+  await signOut();
 }
 
 export default async function TodosPage({
@@ -50,6 +60,7 @@ export default async function TodosPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const session = await auth();
   const resolvedSearchParams = await searchParams;
   const rawPage = Array.isArray(resolvedSearchParams?.page)
     ? resolvedSearchParams?.page[0]
@@ -63,15 +74,12 @@ export default async function TodosPage({
 
   const skip = (page - 1) * PAGE_SIZE;
 
-  const [authors, tasks] = await Promise.all([
-    prisma.author.findMany({ orderBy: { name: "asc" } }),
-    prisma.task.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { author: true },
-      skip,
-      take: PAGE_SIZE,
-    }),
-  ]) as [Author[], (Task & { author: Author | null })[]];
+  const tasks = await prisma.task.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { user: true },
+    skip,
+    take: PAGE_SIZE,
+  }) as (Task & { user: User | null })[];
 
   return (
     <main className="min-h-screen bg-zinc-50 py-12 px-4">
@@ -84,6 +92,36 @@ export default async function TodosPage({
             Aufgaben und Verantwortliche
           </h1>
         </header>
+
+        <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5">
+          {session ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-zinc-600">Angemeldet als</p>
+                <p className="text-base font-semibold text-zinc-950">
+                  {session.user?.name ?? session.user?.email}
+                </p>
+              </div>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                >
+                  Abmelden
+                </button>
+              </form>
+            </div>
+          ) : (
+            <form action={signInAction}>
+              <button
+                type="submit"
+                className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              >
+                Mit GitHub anmelden
+              </button>
+            </form>
+          )}
+        </div>
 
         <form
           action={createTask}
@@ -120,20 +158,6 @@ export default async function TodosPage({
                   className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-zinc-700">Autor</label>
-                <select
-                  name="authorId"
-                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                >
-                  <option value="">No author</option>
-                  {authors.map((author: Author) => (
-                    <option key={author.id} value={author.id}>
-                      {author.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
 
             <button
@@ -146,7 +170,7 @@ export default async function TodosPage({
         </form>
 
         <div className="space-y-4">
-          {tasks.map((task: Task & { author: Author | null }) => (
+          {tasks.map((task: Task & { user: User | null }) => (
             <article
               key={task.id}
               className={clsx(
@@ -167,7 +191,7 @@ export default async function TodosPage({
               </div>
               <div className="mt-3 space-y-1 text-sm text-gray-500">
                 <p>Fällig: {formatDate(task.dueDate)}</p>
-                <p>Autor: {task.author ? task.author.name : "No author"}</p>
+                <p>Von: {task.user ? task.user.name ?? task.user.email : "Nicht zugeordnet"}</p>
               </div>
             </article>
           ))}
