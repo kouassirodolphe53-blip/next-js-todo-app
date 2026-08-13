@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { clsx } from "clsx";
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { auth, signIn, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { signOutAction } from "@/lib/actions";
+import { redirect } from "next/navigation";
 import type { Task, User } from "@prisma/client";
 
 const PAGE_SIZE = 20;
@@ -14,46 +16,19 @@ const formatDate = (date: Date | null) =>
         month: "2-digit",
         year: "numeric",
       })
-    : "No due date";
+    : "Kein Fälligkeitsdatum";
 
-type TaskCreateData = {
-  title: string;
-  description?: string;
-  dueDate?: Date;
-  isDone: boolean;
-  user?: { connect: { id: string } };
+const statusLabel: Record<string, string> = {
+  OFFEN: "Offen",
+  IN_ARBEIT: "In Arbeit",
+  ERLEDIGT: "Erledigt",
 };
 
-async function createTask(formData: FormData) {
-  "use server";
-
-  const session = await auth();
-  const title = formData.get("title")?.toString()?.trim();
-  const description = formData.get("description")?.toString().trim() || undefined;
-  const dueDateValue = formData.get("dueDate")?.toString();
-
-  if (!title) return;
-
-  const data: TaskCreateData = { title, isDone: false };
-  if (description) data.description = description;
-  if (dueDateValue) data.dueDate = new Date(dueDateValue);
-  if (session?.user?.id) {
-    data.user = { connect: { id: session.user.id } };
-  }
-
-  await prisma.task.create({ data });
-  revalidatePath("/todos");
-}
-
-async function signInAction(formData: FormData) {
-  "use server";
-  await signIn("credentials", formData);
-}
-
-async function signOutAction() {
-  "use server";
-  await signOut();
-}
+const statusStyle: Record<string, string> = {
+  OFFEN: "bg-gray-200 text-gray-700",
+  IN_ARBEIT: "bg-amber-100 text-amber-700",
+  ERLEDIGT: "bg-green-500 text-white",
+};
 
 export default async function TodosPage({
   searchParams,
@@ -61,6 +36,8 @@ export default async function TodosPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await auth();
+  if (!session) redirect("/login");
+
   const resolvedSearchParams = await searchParams;
   const rawPage = Array.isArray(resolvedSearchParams?.page)
     ? resolvedSearchParams?.page[0]
@@ -74,12 +51,12 @@ export default async function TodosPage({
 
   const skip = (page - 1) * PAGE_SIZE;
 
-  const tasks = await prisma.task.findMany({
+  const tasks = (await prisma.task.findMany({
     orderBy: { createdAt: "desc" },
     include: { user: true },
     skip,
     take: PAGE_SIZE,
-  }) as (Task & { user: User | null })[];
+  })) as (Task & { user: User | null })[];
 
   return (
     <main className="min-h-screen bg-zinc-50 py-12 px-4">
@@ -93,111 +70,47 @@ export default async function TodosPage({
           </h1>
         </header>
 
-        <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5">
-          {session ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-zinc-600">Angemeldet als</p>
-                <p className="text-base font-semibold text-zinc-950">
-                  {session.user?.name ?? session.user?.email}
-                </p>
-              </div>
-              <form action={signOutAction}>
-                <button
-                  type="submit"
-                  className="rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-                >
-                  Abmelden
-                </button>
-              </form>
-            </div>
-          ) : (
-            <form action={signInAction} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  placeholder="admin@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-700">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                  placeholder="••••••••"
-                />
-              </div>
-
+        <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-zinc-600">Angemeldet als</p>
+            <p className="text-base font-semibold text-zinc-950">
+              {session.user?.name ?? session.user?.email}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Link
+              href="/todos/new"
+              className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            >
+              + Neue Aufgabe
+            </Link>
+            <form action={signOutAction}>
               <button
                 type="submit"
-                className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                className="rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
-                Login
+                Abmelden
               </button>
             </form>
-          )}
+          </div>
         </div>
 
-        <form
-          action={createTask}
-          className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5"
-        >
-          <div className="grid gap-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Titel</label>
-              <input
-                type="text"
-                name="title"
-                required
-                className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                placeholder="Neue Aufgabe"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-zinc-700">Beschreibung</label>
-              <textarea
-                name="description"
-                rows={3}
-                className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                placeholder="Optional: Details zur Aufgabe"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700">Fälligkeitsdatum</label>
-                <input
-                  type="date"
-                  name="dueDate"
-                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
-            >
-              Aufgabe erstellen
-            </button>
-          </div>
-        </form>
-
         <div className="space-y-4">
-          {tasks.map((task: Task & { user: User | null }) => (
-            <article
+          {tasks.length === 0 && (
+            <p className="text-center text-zinc-500 py-8">
+              Noch keine Aufgaben vorhanden.
+            </p>
+          )}
+
+          {tasks.map((task) => (
+            <Link
               key={task.id}
+              href={`/todos/${task.id}/edit`}
               className={clsx(
-                "rounded-xl bg-white p-6 shadow-md transition-shadow hover:shadow-lg",
-                task.isDone ? "border-l-4 border-green-500 opacity-70" : "border-l-4 border-gray-300"
+                "block rounded-xl bg-white p-6 shadow-md transition-shadow hover:shadow-lg",
+                task.status === "ERLEDIGT"
+                  ? "border-l-4 border-green-500 opacity-70"
+                  : "border-l-4 border-gray-300"
               )}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -205,21 +118,20 @@ export default async function TodosPage({
                 <span
                   className={clsx(
                     "rounded-full px-3 py-1 text-sm font-semibold",
-                    task.isDone ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"
+                    statusStyle[task.status]
                   )}
                 >
-                  {task.isDone ? "Erledigt" : "Offen"}
+                  {statusLabel[task.status]}
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-sm text-gray-500">
                 <p>Fällig: {formatDate(task.dueDate)}</p>
-                <p>Von: {task.user ? task.user.name ?? task.user.email : "Nicht zugeordnet"}</p>
+                <p>Zugewiesen an: {task.user ? task.user.name ?? task.user.email : "Nicht zugeordnet"}</p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
-        {/* Pagination */}
         <div className="flex items-center justify-between rounded-xl bg-white p-4 shadow-sm">
           <div>
             {page > 1 ? (
@@ -227,11 +139,11 @@ export default async function TodosPage({
                 href={`/todos?page=${page - 1}`}
                 className="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-200"
               >
-                Previous
+                Zurück
               </a>
             ) : (
               <button className="inline-flex items-center gap-2 rounded-md bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 cursor-default" disabled>
-                Previous
+                Zurück
               </button>
             )}
           </div>
@@ -244,11 +156,11 @@ export default async function TodosPage({
                 href={`/todos?page=${page + 1}`}
                 className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
               >
-                Next
+                Weiter
               </a>
             ) : (
               <button className="inline-flex items-center gap-2 rounded-md bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 cursor-default" disabled>
-                Next
+                Weiter
               </button>
             )}
           </div>
