@@ -45,9 +45,9 @@ async function createTask(formData: FormData) {
   revalidatePath("/todos");
 }
 
-async function signInAction() {
+async function signInAction(formData: FormData) {
   "use server";
-  await signIn("github");
+  await signIn("credentials", formData);
 }
 
 async function signOutAction() {
@@ -112,12 +112,34 @@ export default async function TodosPage({
               </form>
             </div>
           ) : (
-            <form action={signInAction}>
+            <form action={signInAction} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="admin@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  className="mt-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="••••••••"
+                />
+              </div>
+
               <button
                 type="submit"
                 className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
               >
-                Mit GitHub anmelden
+                Login
               </button>
             </form>
           )}

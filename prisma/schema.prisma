@@ -7,11 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  OFFEN
+  IN_ARBEIT
+  ERLEDIGT
+}
+
 model Task {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
-  isDone      Boolean   @default(false)
+  status      Status    @default(OFFEN)
   dueDate     DateTime?
   createdAt   DateTime  @default(now())
   userId      String?
@@ -22,6 +28,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
+  password      String?
   emailVerified DateTime?
   image         String?
   accounts      Account[]
