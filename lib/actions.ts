@@ -89,3 +89,8 @@ export async function signInAction(formData: FormData) {
 export async function signOutAction() {
   await signOut();
 }
+export async function deleteTask(taskId: number) {
+  await prisma.task.delete({ where: { id: taskId } });
+  revalidatePath("/todos");
+  redirect("/todos");
+}

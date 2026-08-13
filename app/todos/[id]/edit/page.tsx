@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { updateTask } from "@/lib/actions";
+import { updateTask, deleteTask } from "@/lib/actions";
 
 export default async function EditTaskPage({
   params,
@@ -104,6 +104,15 @@ export default async function EditTaskPage({
               className="mt-2 w-full rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
             >
               Änderungen speichern
+            </button>
+          </form>
+
+          <form action={deleteTask.bind(null, task.id)} className="mt-3">
+            <button
+              type="submit"
+              className="w-full rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+            >
+              Aufgabe löschen
             </button>
           </form>
         </div>
