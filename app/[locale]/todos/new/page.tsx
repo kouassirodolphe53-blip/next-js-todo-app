@@ -11,7 +11,7 @@ export default async function NewTaskPage() {
   return (
     <main className="min-h-screen bg-zinc-50 py-12 px-4">
       <div className="mx-auto max-w-2xl space-y-6">
-        <Link href="/todos" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/todos" className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-black/5 transition hover:bg-zinc-50">
           ← Zurück zur Liste
         </Link>
 
