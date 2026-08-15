@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { signOutAction } from "@/lib/actions";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import type { Task, User } from "@prisma/client";
+import type { Task, User, Category, Tag, Status } from "@prisma/client";
 
 const PAGE_SIZE = 20;
 
@@ -51,24 +51,55 @@ export default async function TodosPage({
       : t("dashboard.noDueDate");
 
   const resolvedSearchParams = await searchParams;
-  const rawPage = Array.isArray(resolvedSearchParams?.page)
-    ? resolvedSearchParams?.page[0]
-    : resolvedSearchParams?.page;
+  const getParam = (key: string) => {
+    const v = resolvedSearchParams?.[key];
+    return Array.isArray(v) ? v[0] : v;
+  };
+
+  const rawPage = getParam("page");
   let page = parseInt(String(rawPage ?? "1"), 10);
   if (Number.isNaN(page) || page < 1) page = 1;
 
-  const totalCount = await prisma.task.count();
+  const statusFilter = getParam("status") || "";
+  const categoryFilter = getParam("categoryId") || "";
+  const tagFilter = getParam("tagId") || "";
+
+  const where: {
+    status?: Status;
+    categoryId?: number;
+    tags?: { some: { id: number } };
+  } = {};
+  if (statusFilter) where.status = statusFilter as Status;
+  if (categoryFilter) where.categoryId = parseInt(categoryFilter, 10);
+  if (tagFilter) where.tags = { some: { id: parseInt(tagFilter, 10) } };
+
+  const totalCount = await prisma.task.count({ where });
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   if (page > totalPages) page = totalPages;
 
   const skip = (page - 1) * PAGE_SIZE;
 
-  const tasks = (await prisma.task.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { user: true },
-    skip,
-    take: PAGE_SIZE,
-  })) as (Task & { user: User | null })[];
+  const [tasks, categories, tags] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { user: true, category: true, tags: true },
+      skip,
+      take: PAGE_SIZE,
+    }) as Promise<(Task & { user: User | null; category: Category | null; tags: Tag[] })[]>,
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.tag.findMany({ orderBy: { name: "asc" } }),
+  ]);
+
+  const buildFilterUrl = (overrides: Record<string, string>) => {
+    const p = new URLSearchParams();
+    const merged = { status: statusFilter, categoryId: categoryFilter, tagId: tagFilter, ...overrides };
+    if (merged.status) p.set("status", merged.status);
+    if (merged.categoryId) p.set("categoryId", merged.categoryId);
+    if (merged.tagId) p.set("tagId", merged.tagId);
+    const qs = p.toString();
+    return `/todos${qs ? `?${qs}` : ""}`;
+  };
 
   return (
     <main className="min-h-screen bg-zinc-50 py-12 px-4">
@@ -107,6 +138,53 @@ export default async function TodosPage({
           </div>
         </div>
 
+        <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5">
+          <p className="text-sm font-semibold text-zinc-700 mb-3">{t("dashboard.filters")}</p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-1">{t("taskForm.status")}</label>
+              <div className="flex flex-wrap gap-2">
+                <a href={buildFilterUrl({ status: "" })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", !statusFilter ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                  {t("dashboard.all")}
+                </a>
+                {(["OFFEN", "IN_ARBEIT", "ERLEDIGT"] as const).map((s) => (
+                  <a key={s} href={buildFilterUrl({ status: s })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", statusFilter === s ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                    {statusLabel[s]}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-1">{t("taskForm.category")}</label>
+              <div className="flex flex-wrap gap-2">
+                <a href={buildFilterUrl({ categoryId: "" })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", !categoryFilter ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                  {t("dashboard.all")}
+                </a>
+                {categories.map((c) => (
+                  <a key={c.id} href={buildFilterUrl({ categoryId: String(c.id) })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", categoryFilter === String(c.id) ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                    {c.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 mb-1">{t("taskForm.tags")}</label>
+              <div className="flex flex-wrap gap-2">
+                <a href={buildFilterUrl({ tagId: "" })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", !tagFilter ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                  {t("dashboard.all")}
+                </a>
+                {tags.map((tag) => (
+                  <a key={tag.id} href={buildFilterUrl({ tagId: String(tag.id) })} className={clsx("rounded-full px-3 py-1 text-xs font-semibold", tagFilter === String(tag.id) ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700")}>
+                    #{tag.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-4">
           {tasks.length === 0 && (
             <p className="text-center text-zinc-500 py-8">
@@ -139,7 +217,17 @@ export default async function TodosPage({
               <div className="mt-3 space-y-1 text-sm text-gray-500">
                 <p>{t("dashboard.dueDate")}: {formatDate(task.dueDate)}</p>
                 <p>{t("dashboard.assignedTo")}: {task.user ? task.user.name ?? task.user.email : t("dashboard.unassigned")}</p>
+                {task.category && <p>{t("taskForm.category")}: {task.category.name}</p>}
               </div>
+              {task.tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {task.tags.map((tag) => (
+                    <span key={tag.id} className="rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600">
+                      #{tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
             </Link>
           ))}
         </div>
