@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "Liste de tâches",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "register": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "name": "Nom"
+  },
+  "dashboard": {
+    "title": "Tâches et responsables",
+    "newTask": "+ Nouvelle tâche",
+    "assignedTo": "Assigné à",
+    "dueDate": "Échéance",
+    "noTasks": "Aucune tâche pour le moment.",
+    "back": "Précédent",
+    "next": "Suivant"
+  },
+  "taskForm": {
+    "titleLabel": "Titre",
+    "description": "Description",
+    "status": "Statut",
+    "statusOpen": "Ouvert",
+    "statusInProgress": "En cours",
+    "statusDone": "Terminé",
+    "selectUser": "Sélectionner un utilisateur",
+    "save": "Enregistrer",
+    "saveChanges": "Enregistrer les modifications",
+    "delete": "Supprimer la tâche",
+    "backToList": "Retour à la liste",
+    "newTaskTitle": "Créer une nouvelle tâche",
+    "editTaskTitle": "Modifier la tâche"
+  }
+}

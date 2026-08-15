@@ -1,0 +1,35 @@
+{
+  "common": {
+    "appName": "To-Do Liste",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "register": "Registrieren",
+    "email": "Email",
+    "password": "Passwort",
+    "name": "Name"
+  },
+  "dashboard": {
+    "title": "Aufgaben und Verantwortliche",
+    "newTask": "+ Neue Aufgabe",
+    "assignedTo": "Zugewiesen an",
+    "dueDate": "Fällig",
+    "noTasks": "Noch keine Aufgaben vorhanden.",
+    "back": "Zurück",
+    "next": "Weiter"
+  },
+  "taskForm": {
+    "titleLabel": "Titel",
+    "description": "Beschreibung",
+    "status": "Status",
+    "statusOpen": "Offen",
+    "statusInProgress": "In Arbeit",
+    "statusDone": "Erledigt",
+    "selectUser": "Benutzer auswählen",
+    "save": "Speichern",
+    "saveChanges": "Änderungen speichern",
+    "delete": "Aufgabe löschen",
+    "backToList": "Zurück zur Liste",
+    "newTaskTitle": "Neue Aufgabe erstellen",
+    "editTaskTitle": "Aufgabe bearbeiten"
+  }
+}
