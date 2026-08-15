@@ -4,39 +4,51 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { signOutAction } from "@/lib/actions";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import type { Task, User } from "@prisma/client";
 
 const PAGE_SIZE = 20;
 
-const formatDate = (date: Date | null) =>
-  date
-    ? new Date(date).toLocaleDateString("de-DE", {
-        weekday: "short",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : "Kein Fälligkeitsdatum";
-
-const statusLabel: Record<string, string> = {
-  OFFEN: "Offen",
-  IN_ARBEIT: "In Arbeit",
-  ERLEDIGT: "Erledigt",
-};
-
-const statusStyle: Record<string, string> = {
-  OFFEN: "bg-gray-200 text-gray-700",
-  IN_ARBEIT: "bg-amber-100 text-amber-700",
-  ERLEDIGT: "bg-green-500 text-white",
+const localeMap: Record<string, string> = {
+  de: "de-DE",
+  en: "en-US",
+  fr: "fr-FR",
 };
 
 export default async function TodosPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const { locale } = await params;
   const session = await auth();
   if (!session) redirect("/login");
+
+  const t = await getTranslations();
+
+  const statusLabel: Record<string, string> = {
+    OFFEN: t("taskForm.statusOpen"),
+    IN_ARBEIT: t("taskForm.statusInProgress"),
+    ERLEDIGT: t("taskForm.statusDone"),
+  };
+
+  const statusStyle: Record<string, string> = {
+    OFFEN: "bg-gray-200 text-gray-700",
+    IN_ARBEIT: "bg-amber-100 text-amber-700",
+    ERLEDIGT: "bg-green-500 text-white",
+  };
+
+  const formatDate = (date: Date | null) =>
+    date
+      ? new Date(date).toLocaleDateString(localeMap[locale] ?? "de-DE", {
+          weekday: "short",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : t("dashboard.noDueDate");
 
   const resolvedSearchParams = await searchParams;
   const rawPage = Array.isArray(resolvedSearchParams?.page)
@@ -63,16 +75,16 @@ export default async function TodosPage({
       <div className="mx-auto max-w-2xl space-y-6">
         <header className="text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-zinc-500">
-            To-Do Liste
+            {t("common.appName")}
           </p>
           <h1 className="mt-3 text-3xl font-semibold text-zinc-950">
-            Aufgaben und Verantwortliche
+            {t("dashboard.title")}
           </h1>
         </header>
 
         <div className="rounded-3xl bg-white p-6 shadow-md ring-1 ring-black/5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-zinc-600">Angemeldet als</p>
+            <p className="text-sm text-zinc-600">{t("dashboard.loggedInAs")}</p>
             <p className="text-base font-semibold text-zinc-950">
               {session.user?.name ?? session.user?.email}
             </p>
@@ -82,14 +94,14 @@ export default async function TodosPage({
               href="/todos/new"
               className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
-              + Neue Aufgabe
+              {t("dashboard.newTask")}
             </Link>
             <form action={signOutAction}>
               <button
                 type="submit"
                 className="rounded-2xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
-                Abmelden
+                {t("common.logout")}
               </button>
             </form>
           </div>
@@ -98,7 +110,7 @@ export default async function TodosPage({
         <div className="space-y-4">
           {tasks.length === 0 && (
             <p className="text-center text-zinc-500 py-8">
-              Noch keine Aufgaben vorhanden.
+              {t("dashboard.noTasks")}
             </p>
           )}
 
@@ -125,8 +137,8 @@ export default async function TodosPage({
                 </span>
               </div>
               <div className="mt-3 space-y-1 text-sm text-gray-500">
-                <p>Fällig: {formatDate(task.dueDate)}</p>
-                <p>Zugewiesen an: {task.user ? task.user.name ?? task.user.email : "Nicht zugeordnet"}</p>
+                <p>{t("dashboard.dueDate")}: {formatDate(task.dueDate)}</p>
+                <p>{t("dashboard.assignedTo")}: {task.user ? task.user.name ?? task.user.email : t("dashboard.unassigned")}</p>
               </div>
             </Link>
           ))}
@@ -139,16 +151,18 @@ export default async function TodosPage({
                 href={`/todos?page=${page - 1}`}
                 className="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-200"
               >
-                Zurück
+                {t("dashboard.back")}
               </a>
             ) : (
               <button className="inline-flex items-center gap-2 rounded-md bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 cursor-default" disabled>
-                Zurück
+                {t("dashboard.back")}
               </button>
             )}
           </div>
 
-          <div className="text-sm text-zinc-600">Seite {page} von {totalPages}</div>
+          <div className="text-sm text-zinc-600">
+            {t("dashboard.pageInfo", { page, totalPages })}
+          </div>
 
           <div>
             {page < totalPages ? (
@@ -156,11 +170,11 @@ export default async function TodosPage({
                 href={`/todos?page=${page + 1}`}
                 className="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
               >
-                Weiter
+                {t("dashboard.next")}
               </a>
             ) : (
               <button className="inline-flex items-center gap-2 rounded-md bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 cursor-default" disabled>
-                Weiter
+                {t("dashboard.next")}
               </button>
             )}
           </div>

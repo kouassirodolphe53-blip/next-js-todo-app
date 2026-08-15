@@ -5,6 +5,8 @@
     "logout": "Déconnexion",
     "register": "S'inscrire",
     "noAccount": "Pas encore de compte ?",
+    "alreadyAccount": "Déjà un compte ?",
+    "createAccount": "Créer un compte",
     "email": "Email",
     "password": "Mot de passe",
     "name": "Nom"
@@ -15,11 +17,19 @@
     "assignedTo": "Assigné à",
     "dueDate": "Échéance",
     "noTasks": "Aucune tâche pour le moment.",
+    "loggedInAs": "Connecté en tant que",
+    "noDueDate": "Aucune échéance",
+    "unassigned": "Non assigné",
+    "pageInfo": "Page {page} sur {totalPages}",
     "back": "Précédent",
     "next": "Suivant"
   },
   "taskForm": {
     "titleLabel": "Titre",
+    "titlePlaceholder": "Entrer le titre de la tâche...",
+    "descriptionPlaceholder": "Entrer la description...",
+    "optional": "optionnel",
+    "dueDateLabel": "Date d'échéance",
     "description": "Description",
     "status": "Statut",
     "statusOpen": "Ouvert",

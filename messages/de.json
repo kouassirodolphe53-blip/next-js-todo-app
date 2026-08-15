@@ -5,6 +5,8 @@
     "logout": "Abmelden",
     "register": "Registrieren",
     "noAccount": "Noch kein Konto?",
+    "alreadyAccount": "Bereits ein Konto?",
+    "createAccount": "Konto erstellen",
     "email": "Email",
     "password": "Passwort",
     "name": "Name"
@@ -15,11 +17,19 @@
     "assignedTo": "Zugewiesen an",
     "dueDate": "Fällig",
     "noTasks": "Noch keine Aufgaben vorhanden.",
+    "loggedInAs": "Angemeldet als",
+    "noDueDate": "Kein Fälligkeitsdatum",
+    "unassigned": "Nicht zugeordnet",
+    "pageInfo": "Seite {page} von {totalPages}",
     "back": "Zurück",
     "next": "Weiter"
   },
   "taskForm": {
     "titleLabel": "Titel",
+    "titlePlaceholder": "Aufgabentitel eingeben...",
+    "descriptionPlaceholder": "Beschreibung eingeben...",
+    "optional": "optional",
+    "dueDateLabel": "Fälligkeitsdatum",
     "description": "Beschreibung",
     "status": "Status",
     "statusOpen": "Offen",

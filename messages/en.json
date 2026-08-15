@@ -5,6 +5,8 @@
     "logout": "Log out",
     "register": "Sign up",
     "noAccount": "No account yet?",
+    "alreadyAccount": "Already have an account?",
+    "createAccount": "Create account",
     "email": "Email",
     "password": "Password",
     "name": "Name"
@@ -15,11 +17,19 @@
     "assignedTo": "Assigned to",
     "dueDate": "Due",
     "noTasks": "No tasks yet.",
+    "loggedInAs": "Logged in as",
+    "noDueDate": "No due date",
+    "unassigned": "Unassigned",
+    "pageInfo": "Page {page} of {totalPages}",
     "back": "Back",
     "next": "Next"
   },
   "taskForm": {
     "titleLabel": "Title",
+    "titlePlaceholder": "Enter task title...",
+    "descriptionPlaceholder": "Enter description...",
+    "optional": "optional",
+    "dueDateLabel": "Due date",
     "description": "Description",
     "status": "Status",
     "statusOpen": "Open",
