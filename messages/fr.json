@@ -4,6 +4,7 @@
     "login": "Connexion",
     "logout": "Déconnexion",
     "register": "S'inscrire",
+    "noAccount": "Pas encore de compte ?",
     "email": "Email",
     "password": "Mot de passe",
     "name": "Nom"

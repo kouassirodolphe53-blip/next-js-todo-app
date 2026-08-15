@@ -4,6 +4,7 @@
     "login": "Anmelden",
     "logout": "Abmelden",
     "register": "Registrieren",
+    "noAccount": "Noch kein Konto?",
     "email": "Email",
     "password": "Passwort",
     "name": "Name"
