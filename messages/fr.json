@@ -48,5 +48,26 @@
     "backToList": "Retour à la liste",
     "newTaskTitle": "Créer une nouvelle tâche",
     "editTaskTitle": "Modifier la tâche"
+  },
+  "home": {
+    "eyebrow": "Inspiré de la méthode Getting Things Done",
+    "headlineLine1": "Ouvert. En cours.",
+    "headlineLine2": "Terminé.",
+    "subtitle": "Crée des tâches, classe-les avec des catégories et des tags, et retrouve-les en quelques secondes — seul ou en équipe.",
+    "ctaPrimary": "S'inscrire gratuitement",
+    "ctaSecondary": "Se connecter",
+    "goToTasks": "Voir mes tâches",
+    "demoTaskTitle": "Préparer la présentation",
+    "demoTag": "urgent",
+    "demoCategory": "Études",
+    "feature1Title": "Catégories & tags",
+    "feature1Desc": "Classe tes tâches par projet et ajoute autant de tags que tu veux.",
+    "feature2Title": "Filtres intelligents",
+    "feature2Desc": "Retrouve n'importe quelle tâche en quelques secondes — par statut, catégorie ou tag.",
+    "feature3Title": "Trois langues",
+    "feature3Desc": "Allemand, anglais, français — change à tout moment.",
+    "feature4Title": "Connexion sécurisée",
+    "feature4Desc": "Les mots de passe sont stockés chiffrés avec Argon2.",
+    "footerTagline": "Construit avec Next.js, Prisma et un peu de café."
   }
 }

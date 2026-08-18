@@ -48,5 +48,26 @@
     "backToList": "Zurück zur Liste",
     "newTaskTitle": "Neue Aufgabe erstellen",
     "editTaskTitle": "Aufgabe bearbeiten"
+  },
+  "home": {
+    "eyebrow": "Nach der Getting-Things-Done-Methode",
+    "headlineLine1": "Offen. In Arbeit.",
+    "headlineLine2": "Erledigt.",
+    "subtitle": "Aufgaben erstellen, mit Kategorien und Tags ordnen und in Sekunden wiederfinden – für dich allein oder im Team.",
+    "ctaPrimary": "Kostenlos registrieren",
+    "ctaSecondary": "Anmelden",
+    "goToTasks": "Zu meinen Aufgaben",
+    "demoTaskTitle": "Präsentation vorbereiten",
+    "demoTag": "dringend",
+    "demoCategory": "Studium",
+    "feature1Title": "Kategorien & Tags",
+    "feature1Desc": "Ordne Aufgaben nach Projekt und versieh sie mit beliebig vielen Tags.",
+    "feature2Title": "Intelligente Filter",
+    "feature2Desc": "Finde jede Aufgabe in Sekunden – nach Status, Kategorie oder Tag.",
+    "feature3Title": "Drei Sprachen",
+    "feature3Desc": "Deutsch, Englisch, Französisch – jederzeit umschaltbar.",
+    "feature4Title": "Sicher angemeldet",
+    "feature4Desc": "Passwörter werden mit Argon2 verschlüsselt gespeichert.",
+    "footerTagline": "Gebaut mit Next.js, Prisma und ein bisschen Kaffee."
   }
 }

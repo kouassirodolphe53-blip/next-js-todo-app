@@ -24,3 +24,32 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes cardStatusColor {
+  0%, 30% { background-color: #e4e4e7; border-color: #d4d4d8; }
+  36%, 63% { background-color: #fde68a; border-color: #fcd34d; }
+  69%, 96% { background-color: #22c55e; border-color: #22c55e; }
+  100% { background-color: #e4e4e7; border-color: #d4d4d8; }
+}
+@keyframes cardCheckFade {
+  0%, 63% { opacity: 0; transform: scale(0.5); }
+  72%, 96% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+@keyframes pillFade1 { 0%, 30% { opacity: 1; } 33%, 100% { opacity: 0; } }
+@keyframes pillFade2 { 0%, 30% { opacity: 0; } 36%, 63% { opacity: 1; } 66%, 100% { opacity: 0; } }
+@keyframes pillFade3 { 0%, 63% { opacity: 0; } 69%, 96% { opacity: 1; } 100% { opacity: 0; } }
+
+.status-demo-box { animation: cardStatusColor 9s ease-in-out infinite; }
+.status-demo-check { animation: cardCheckFade 9s ease-in-out infinite; }
+.status-demo-pill-1 { animation: pillFade1 9s ease-in-out infinite; }
+.status-demo-pill-2 { animation: pillFade2 9s ease-in-out infinite; }
+.status-demo-pill-3 { animation: pillFade3 9s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .status-demo-box, .status-demo-check, .status-demo-pill-1, .status-demo-pill-2, .status-demo-pill-3 {
+    animation: none !important;
+  }
+  .status-demo-pill-1 { opacity: 1 !important; }
+  .status-demo-pill-2, .status-demo-pill-3 { opacity: 0 !important; }
+}

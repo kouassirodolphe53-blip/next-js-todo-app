@@ -48,5 +48,26 @@
     "backToList": "Back to list",
     "newTaskTitle": "Create new task",
     "editTaskTitle": "Edit task"
+  },
+  "home": {
+    "eyebrow": "Inspired by Getting Things Done",
+    "headlineLine1": "Open. In progress.",
+    "headlineLine2": "Done.",
+    "subtitle": "Create tasks, sort them with categories and tags, and find them again in seconds — solo or with your team.",
+    "ctaPrimary": "Sign up for free",
+    "ctaSecondary": "Log in",
+    "goToTasks": "Go to my tasks",
+    "demoTaskTitle": "Prepare presentation",
+    "demoTag": "urgent",
+    "demoCategory": "Studies",
+    "feature1Title": "Categories & tags",
+    "feature1Desc": "Sort tasks by project and add as many tags as you like.",
+    "feature2Title": "Smart filters",
+    "feature2Desc": "Find any task in seconds — by status, category, or tag.",
+    "feature3Title": "Three languages",
+    "feature3Desc": "German, English, French — switch anytime.",
+    "feature4Title": "Securely signed in",
+    "feature4Desc": "Passwords are stored encrypted with Argon2.",
+    "footerTagline": "Built with Next.js, Prisma and a bit of coffee."
   }
 }
