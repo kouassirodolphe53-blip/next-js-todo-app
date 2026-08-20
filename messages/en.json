@@ -1,7 +1,8 @@
 {
   "common": {
-    "appName": "To-Do List",
+    "appName": "Sortify",
     "login": "Log in",
+    "or": "or",
     "logout": "Log out",
     "register": "Sign up",
     "noAccount": "No account yet?",

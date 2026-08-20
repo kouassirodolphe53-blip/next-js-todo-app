@@ -1,7 +1,8 @@
 {
   "common": {
-    "appName": "Liste de tâches",
+    "appName": "Sortify",
     "login": "Connexion",
+    "or": "ou",
     "logout": "Déconnexion",
     "register": "S'inscrire",
     "noAccount": "Pas encore de compte ?",

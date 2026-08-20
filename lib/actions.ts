@@ -124,3 +124,7 @@ export async function deleteTask(taskId: number) {
   revalidatePath("/todos");
   redirect("/todos");
 }
+
+export async function signInWithGoogle() {
+  await signIn("google", { redirectTo: "/todos" });
+}
